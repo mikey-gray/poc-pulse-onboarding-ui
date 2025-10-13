@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+
+/* Scrollbar styling (optional) */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: theme('colors.gray.100'); }
+::-webkit-scrollbar-thumb { background: theme('colors.gray.300'); border-radius: 9999px; }
