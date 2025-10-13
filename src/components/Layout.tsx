@@ -5,13 +5,22 @@ import WorkspacesPane from './WorkspacesPane';
 export default function Layout() {
   const [leftWidth, setLeftWidth] = useState(320); // px
 
+  const minLeft = 200;
+  const minRight = 320; // ensure right pane remains usable
   const onDrag = (e: React.MouseEvent) => {
     e.preventDefault();
     const startX = e.clientX;
     const startWidth = leftWidth;
     const onMove = (moveEvt: MouseEvent) => {
       const delta = moveEvt.clientX - startX;
-      setLeftWidth(Math.max(200, startWidth + delta));
+      const newLeft = Math.max(minLeft, startWidth + delta);
+      // Constrain so right pane not below minRight
+      const totalWidth = window.innerWidth;
+      if (totalWidth - newLeft < minRight) {
+        setLeftWidth(totalWidth - minRight);
+      } else {
+        setLeftWidth(newLeft);
+      }
     };
     const onUp = () => {
       window.removeEventListener('mousemove', onMove);
