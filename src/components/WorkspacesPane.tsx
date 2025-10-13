@@ -1,6 +1,6 @@
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import { Plus, X } from 'lucide-react';
+import { BookPlus, SquarePlus, X } from 'lucide-react';
 import { useAppState } from '../state/StateContext';
 
 // Clean implementation replacing corrupted nested content
@@ -102,7 +102,7 @@ export default function WorkspacesPane() {
   }), [assignCompany]);
 
   return (
-    <div className="flex flex-col h-full p-3 gap-4 overflow-y-auto">
+    <div className="flex flex-col h-full p-3 gap-4 overflow-y-auto bg-company-100">
       <div className="flex flex-wrap items-center gap-3">
         <input
           value={companyName}
@@ -114,7 +114,7 @@ export default function WorkspacesPane() {
           onClick={addWorkspace}
           className="flex items-center gap-1 px-3 py-2 rounded bg-workspace-500 hover:bg-workspace-600 text-white text-sm shadow-sm"
         >
-          <Plus className="w-4 h-4" /> Workspace
+          <BookPlus className="w-4 h-4" /> Workspace
         </button>
       </div>
       <div ref={companyDrop}>
@@ -193,7 +193,7 @@ function WorkspaceBox(props: WorkspaceBoxProps) {
   const assignedIds = workspaceAssignments.filter(a => a.workspaceId === workspaceId).map(a => a.contactId);
 
   return (
-    <div className={`rounded p-3 shadow-sm space-y-3 transition bg-workspace-50 border border-transparent hover:border-workspace-300`}>      
+    <div className={`rounded p-3 shadow-sm space-y-3 transition bg-workspace-100 border border-transparent hover:border-workspace-300`}>      
       <div className="flex items-center gap-2">
         <input
           value={name}
@@ -201,14 +201,14 @@ function WorkspaceBox(props: WorkspaceBoxProps) {
           placeholder="Workspace"
           className="flex-1 font-medium text-base bg-transparent border border-transparent focus:border-workspace-400 focus:bg-workspace-50/40 hover:border-workspace-300 rounded px-2 py-1 transition"
         />
-        <button onClick={() => addClient(workspaceId)} className="flex items-center gap-1 px-2 py-1 rounded bg-client-500 hover:bg-client-600 text-white text-xs shadow-sm">
-          <Plus className="w-4 h-4" /> Client
+        <button onClick={() => addClient(workspaceId)} className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-client-500 hover:bg-client-600 text-white text-xs shadow-sm">
+          <SquarePlus className="w-4 h-4" /> Client
         </button>
       </div>
       <div ref={workspaceDrop}>
         <DragTarget
           palette="workspace"
-          roleLabel="Manager"
+          roleLabel="Senior Manager"
           isOver={isOverWorkspace}
           assignments={assignedIds}
           contacts={contacts}
@@ -256,7 +256,7 @@ function ClientBox(props: ClientBoxProps) {
   const assignedIds = clientAssignments.filter(a => a.clientId === clientId).map(a => a.contactId);
 
   return (
-    <div className={`rounded p-2 space-y-2 transition bg-client-50 border border-transparent hover:border-client-300`}>
+    <div className={`rounded p-2 space-y-2 transition bg-client-100 border border-transparent hover:border-client-300`}>
       <input
         value={name}
         onChange={e => renameClient(workspaceId, clientId, e.target.value)}
@@ -266,7 +266,7 @@ function ClientBox(props: ClientBoxProps) {
       <div ref={clientDrop}>
         <DragTarget
           palette="client"
-          roleLabel="Account"
+          roleLabel="Account Manager"
           isOver={isOverClient}
           assignments={assignedIds}
           contacts={contacts}
