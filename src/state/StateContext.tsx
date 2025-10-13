@@ -12,6 +12,9 @@ interface StateContextValue extends AppState {
   assignCompany(contactId: string): void;
   assignWorkspace(workspaceId: string, contactId: string): void;
   assignClient(workspaceId: string, clientId: string, contactId: string): void;
+  removeCompanyAssignment(contactId: string): void;
+  removeWorkspaceAssignment(workspaceId: string, contactId: string): void;
+  removeClientAssignment(clientId: string, contactId: string): void;
   reset(): void;
 }
 
@@ -101,6 +104,28 @@ export function StateProvider({ children }: { children: ReactNode }) {
         : [...s.clientAssignments, { clientId, contactId, role: 'Account' }],
     }));
 
+  const removeCompanyAssignment = (contactId: string) =>
+    setState(s => ({
+      ...s,
+      companyAssignments: s.companyAssignments.filter(a => a.contactId !== contactId),
+    }));
+
+  const removeWorkspaceAssignment = (workspaceId: string, contactId: string) =>
+    setState(s => ({
+      ...s,
+      workspaceAssignments: s.workspaceAssignments.filter(
+        a => !(a.workspaceId === workspaceId && a.contactId === contactId)
+      ),
+    }));
+
+  const removeClientAssignment = (clientId: string, contactId: string) =>
+    setState(s => ({
+      ...s,
+      clientAssignments: s.clientAssignments.filter(
+        a => !(a.clientId === clientId && a.contactId === contactId)
+      ),
+    }));
+
   const reset = () =>
     setState({
       companyName: '',
@@ -123,6 +148,9 @@ export function StateProvider({ children }: { children: ReactNode }) {
     assignCompany,
     assignWorkspace,
     assignClient,
+    removeCompanyAssignment,
+    removeWorkspaceAssignment,
+    removeClientAssignment,
     reset,
   };
 
