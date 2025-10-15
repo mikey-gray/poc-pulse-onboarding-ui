@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { UserPlus, Import } from 'lucide-react';
 import { useAppState } from '../state/StateContext';
+import { useAuth } from '../auth/AuthContext';
+import { fetchGraphContacts } from '../auth/graph';
 
 export default function ContactsPane() {
   const { contacts, addContact, importContacts } = useAppState();
+  const { account, login, acquireToken } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [loadingImport, setLoadingImport] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
 
   const sorted = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
 
@@ -19,11 +24,26 @@ export default function ContactsPane() {
     setShowAdd(false);
   };
 
-  const importSample = () => {
-    importContacts([
-      { name: 'Charlie Adams', email: 'charlie@example.com' },
-      { name: 'Dana Lee', email: 'dana@example.com' },
-    ]);
+  const importFromGraph = async () => {
+    setImportError(null);
+    setLoadingImport(true);
+    try {
+      // Ensure login
+      if (!account) {
+        const loggedIn = await login();
+        if (!loggedIn) throw new Error('Login cancelled');
+      }
+      const token = await acquireToken(['Contacts.Read']);
+      if (!token) throw new Error('Failed to acquire token');
+      const graphContacts = await fetchGraphContacts(token);
+      if (!graphContacts.length) throw new Error('No contacts returned');
+      importContacts(graphContacts);
+    } catch (e: any) {
+      setImportError(e.message || 'Import failed');
+      console.error(e);
+    } finally {
+      setLoadingImport(false);
+    }
   };
 
   return (
@@ -34,11 +54,12 @@ export default function ContactsPane() {
           <button onClick={() => setShowAdd(true)} className="flex items-center gap-1 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs">
             <UserPlus className="w-4 h-4" /> Add Contact
           </button>
-          <button onClick={importSample} className="flex items-center gap-1 px-2 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-800 text-xs">
-            <Import className="w-4 h-4" /> Import
+          <button disabled={loadingImport} onClick={importFromGraph} className="flex items-center gap-1 px-2 py-1 rounded bg-indigo-600 disabled:opacity-50 hover:bg-indigo-700 text-white text-xs">
+            <Import className={`w-4 h-4 ${loadingImport ? 'animate-pulse' : ''}`} /> {loadingImport ? 'Importing...' : 'Import'}
           </button>
         </div>
       </div>
+      {importError && <div className="px-2 py-1 text-xs text-red-600 bg-red-50 border border-red-200">{importError}</div>}
       {showAdd && (
         <div className="p-2 border-b bg-gray-50 flex flex-wrap gap-2 text-xs">
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="border rounded px-2 py-1 flex-1" />
