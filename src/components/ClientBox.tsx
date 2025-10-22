@@ -38,7 +38,7 @@ export function ClientBox({ workspaceId, client }: ClientBoxProps) {
         />
         <button
           onClick={() => removeClient(workspaceId, client.id)}
-          className="flex items-center justify-center px-2 py-1 rounded border border-client-300 text-client-500 hover:border-red-500 hover:text-red-600 bg-white text-xs"
+          className="flex items-center justify-center h-4 w-4 -mt-4 -mr-1 rounded-full border border-client-300 text-client-500 hover:border-red-500 hover:text-red-600 bg-white text-xs"
           title="Remove client"
         >
           <X className="w-4 h-4" />

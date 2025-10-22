@@ -75,15 +75,16 @@ export function StateProvider({ children }: { children: ReactNode }) {
   };
 
   const removeWorkspace = (workspaceId: string) =>
-    setState(s => ({
-      ...s,
-      workspaces: s.workspaces.filter(w => w.id !== workspaceId),
-      workspaceAssignments: s.workspaceAssignments.filter(a => a.workspaceId !== workspaceId),
-      clientAssignments: s.clientAssignments.filter(a => {
-        const owning = s.workspaces.find(w => w.clients.some(c => c.id === a.clientId));
-        return owning ? owning.id !== workspaceId : true;
-      }),
-    }));
+    setState(s => {
+      const ws = s.workspaces.find(w => w.id === workspaceId);
+      const clientIds = ws ? ws.clients.map(c => c.id) : [];
+      return {
+        ...s,
+        workspaces: s.workspaces.filter(w => w.id !== workspaceId),
+        workspaceAssignments: s.workspaceAssignments.filter(a => a.workspaceId !== workspaceId),
+        clientAssignments: s.clientAssignments.filter(a => !clientIds.includes(a.clientId)),
+      };
+    });
 
   const removeClient = (workspaceId: string, clientId: string) =>
     setState(s => ({

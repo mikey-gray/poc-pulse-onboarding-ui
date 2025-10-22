@@ -44,7 +44,7 @@ export function WorkspaceBox({ workspace }: WorkspaceBoxProps) {
         </button>
         <button
           onClick={() => removeWorkspace(workspace.id)}
-          className="flex items-center justify-center px-2 py-1 rounded border border-workspace-300 text-workspace-500 hover:border-red-500 hover:text-red-600 bg-white text-xs"
+          className="flex items-center justify-center h-5 w-5 -mt-6 -mr-1 rounded-full border border-workspace-300 text-workspace-500 hover:border-red-500 hover:text-red-600 bg-white text-xs"
           title="Remove workspace"
         >
           <X className="w-4 h-4" />

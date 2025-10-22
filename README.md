@@ -2,7 +2,7 @@
 
 ## Overview
 
-Prototype single-page React + TypeScript application for organising contacts into company, workspaces, and clients. 
+Prototype single-page React + TypeScript application for organising contacts into company, workspaces, and clients.
 
 ## Getting Started
 
@@ -16,9 +16,8 @@ npm run dev
 ## Commands
 
 - `npm run dev` - Start Vite dev server
-- `npm run build` - Production build (not required for local POC)
+- `npm run build` - Production build (optional for local POC)
 - `npm run preview` - Preview production build
-- `npm run test` - Run Vitest tests (to be added)
 - `npm run lint` - Lint sources
 
 ## CSV Contact Import (POC)
@@ -38,16 +37,33 @@ An example file is provided at `example-contacts.csv` with 25 sample rows.
 
 Future: Could reintroduce Graph import behind a feature flag, add CSV header handling, or support other delimiters.
 
-## Testing
+## Removal & Assignments
 
-Vitest is configured. Sample unit tests cover state mutations. 
+You can remove:
 
-Run:
+- A contact (removes all its company/workspace/client assignments)
+- A workspace (removes its workspace assignments and all client assignments for its clients)
+- A client (removes its client assignments)
 
-```bash
-npm run test
-```
+Drag & drop:
+
+- Drag a contact onto the company box to assign as an Admin
+- Drag onto a workspace to assign as a Senior Manager
+- Drag onto a client to assign as an Account Manager
+
+Chips appear for each assignment; click the × to remove that single assignment.
+
+## Refactor Notes
+
+Components have been extracted for clarity and reduced prop drilling:
+
+- `WorkspaceBox` and `ClientBox` use the state hook directly
+- `DraggableContact` encapsulates drag behavior
+- `DragTarget` centralizes drop zone visuals & logic
+- `Chip` unifies styling for assignment pills
+
+Action type aliases are defined in `src/state/actions.ts` for developer ergonomics.
 
 ## State Shape
 
-Refer to `src/state/types.ts` for full interfaces of contacts, workspaces, clients, and assignments.
+Refer to `src/state/types.ts` for full interfaces of contacts, workspaces, clients, and assignments. See `src/state/StateContext.tsx` for mutation logic.
