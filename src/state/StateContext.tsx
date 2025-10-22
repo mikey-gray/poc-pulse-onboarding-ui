@@ -21,8 +21,7 @@ interface StateContextValue extends AppState {
 const StateContext = createContext<StateContextValue | undefined>(undefined);
 
 const initialContacts: Contact[] = [
-  { id: crypto.randomUUID(), name: 'Alice Johnson', email: 'alice@example.com' },
-  { id: crypto.randomUUID(), name: 'Bob Smith', email: 'bob@example.com' },
+  { id: crypto.randomUUID(), name: 'Example User', email: 'contact@example.com' },
 ];
 
 export function StateProvider({ children }: { children: ReactNode }) {

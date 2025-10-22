@@ -2,48 +2,53 @@ import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { UserPlus, Import } from 'lucide-react';
 import { useAppState } from '../state/StateContext';
-import { useAuth } from '../auth/AuthContext';
-import { fetchGraphContacts } from '../auth/graph';
+import { parseCsvContacts, validateCsvExample } from '../utils/parseCsvContacts';
 
 export default function ContactsPane() {
   const { contacts, addContact, importContacts } = useAppState();
-  const { account, login, acquireToken } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [loadingImport, setLoadingImport] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
 
   const sorted = [...contacts].sort((a, b) => a.name.localeCompare(b.name));
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailExists = email ? contacts.some(c => c.email.toLowerCase() === email.toLowerCase()) : false;
+  const emailValid = email ? emailRegex.test(email) : false;
+
   const submit = () => {
-    if (!name.trim() || !email.trim()) return;
+    if (!name.trim() || !email.trim() || !emailValid || emailExists) return;
     addContact({ name: name.trim(), email: email.trim() });
     setName('');
     setEmail('');
     setShowAdd(false);
   };
 
-  const importFromGraph = async () => {
+  const onPickFile = () => {
     setImportError(null);
-    setLoadingImport(true);
-    try {
-      // Ensure login
-      if (!account) {
-        const loggedIn = await login();
-        if (!loggedIn) throw new Error('Login cancelled');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+  const existing = new Set(contacts.map(c => c.email.toLowerCase()));
+  const parsed = parseCsvContacts(text, existing);
+        if (!parsed.length) {
+          setImportError(
+            'No valid contacts found. Provide CSV with name,email in each row. ' + validateCsvExample()
+          );
+          return;
+        }
+        importContacts(parsed);
+      } catch (e: any) {
+        setImportError(e.message || 'Failed to read file');
       }
-      const token = await acquireToken(['Contacts.Read']);
-      if (!token) throw new Error('Failed to acquire token');
-      const graphContacts = await fetchGraphContacts(token);
-      if (!graphContacts.length) throw new Error('No contacts returned');
-      importContacts(graphContacts);
-    } catch (e: any) {
-      setImportError(e.message || 'Import failed');
-      console.error(e);
-    } finally {
-      setLoadingImport(false);
-    }
+    };
+    input.click();
   };
 
   return (
@@ -54,18 +59,43 @@ export default function ContactsPane() {
           <button onClick={() => setShowAdd(true)} className="flex items-center gap-1 px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs">
             <UserPlus className="w-4 h-4" /> Add Contact
           </button>
-          <button disabled={loadingImport} onClick={importFromGraph} className="flex items-center gap-1 px-2 py-1 rounded bg-indigo-600 disabled:opacity-50 hover:bg-indigo-700 text-white text-xs">
-            <Import className={`w-4 h-4 ${loadingImport ? 'animate-pulse' : ''}`} /> {loadingImport ? 'Importing...' : 'Import'}
+          <button onClick={onPickFile} className="flex items-center gap-1 px-2 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white text-xs" title="Import contacts from CSV">
+            <Import className="w-4 h-4" /> Import CSV
           </button>
         </div>
       </div>
-      {importError && <div className="px-2 py-1 text-xs text-red-600 bg-red-50 border border-red-200">{importError}</div>}
+      {importError && (
+        <div className="p-3 border-y bg-red-50 border-red-200 text-xs text-red-700 whitespace-pre-line">
+          {importError}
+        </div>
+      )}
       {showAdd && (
         <div className="p-2 border-b bg-gray-50 flex flex-wrap gap-2 text-xs">
-          <input value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="border rounded px-2 py-1 flex-1" />
-          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" className="border rounded px-2 py-1 flex-1" />
-          <button onClick={submit} className="px-2 py-1 rounded bg-indigo-200 hover:bg-indigo-300 text-indigo-900">Save</button>
+          <input
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Name"
+            className="border rounded px-2 py-1 flex-1"
+          />
+          <input
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Email"
+            className={`border rounded px-2 py-1 flex-1 ${email && (!emailValid || emailExists) ? 'border-red-500 bg-red-50' : ''}`}
+          />
+          <button
+            onClick={submit}
+            disabled={!name.trim() || !email.trim() || !emailValid || emailExists}
+            className={`px-2 py-1 rounded text-indigo-900 ${(!name.trim() || !email.trim() || !emailValid || emailExists) ? 'bg-indigo-100 cursor-not-allowed opacity-60' : 'bg-indigo-200 hover:bg-indigo-300'}`}
+          >
+            Save
+          </button>
           <button onClick={() => setShowAdd(false)} className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800">Cancel</button>
+          {email && (!emailValid || emailExists) && (
+            <div className="basis-full text-red-600 mt-1">
+              {!emailValid ? 'Invalid email format.' : 'Email already exists.'}
+            </div>
+          )}
         </div>
       )}
   <div className="overflow-y-auto p-2 space-y-2">
