@@ -20,7 +20,3 @@ export function parseCsvContacts(csvText: string, existingEmails: Set<string> = 
   }
   return results;
 }
-
-export function validateCsvExample(): string {
-  return 'Example format (no header required):\nJohn Doe,john@example.com\nJane Smith,jane@domain.org';
-}

@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useDrag } from 'react-dnd';
 import { UserPlus, Import } from 'lucide-react';
 import { useAppState } from '../state/StateContext';
-import { parseCsvContacts, validateCsvExample } from '../utils/parseCsvContacts';
+import { parseCsvContacts } from '../utils/parseCsvContacts';
 
 export default function ContactsPane() {
-  const { contacts, addContact, importContacts } = useAppState();
+  const { contacts, addContact, importContacts, removeContact } = useAppState();
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -39,7 +39,7 @@ export default function ContactsPane() {
   const parsed = parseCsvContacts(text, existing);
         if (!parsed.length) {
           setImportError(
-            'No valid contacts found. Provide CSV with name,email in each row. ' + validateCsvExample()
+            'No valid contacts found. Emails all duplicates or invalid format.'
           );
           return;
         }
@@ -91,24 +91,19 @@ export default function ContactsPane() {
             Save
           </button>
           <button onClick={() => setShowAdd(false)} className="px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-slate-800">Cancel</button>
-          {email && (!emailValid || emailExists) && (
-            <div className="basis-full text-red-600 mt-1">
-              {!emailValid ? 'Invalid email format.' : 'Email already exists.'}
-            </div>
-          )}
         </div>
       )}
   <div className="overflow-y-auto p-2 space-y-2">
         {sorted.map(c => (
-          <DraggableContact key={c.id} id={c.id} name={c.name} email={c.email} />
+          <DraggableContact key={c.id} id={c.id} name={c.name} email={c.email} onRemove={removeContact} />
         ))}
       </div>
     </div>
   );
 }
 
-interface DraggableContactProps { id: string; name: string; email: string }
-function DraggableContact({ id, name, email }: DraggableContactProps) {
+interface DraggableContactProps { id: string; name: string; email: string; onRemove(id: string): void }
+function DraggableContact({ id, name, email, onRemove }: DraggableContactProps) {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: 'CONTACT',
     item: { contactId: id },
@@ -117,11 +112,18 @@ function DraggableContact({ id, name, email }: DraggableContactProps) {
   return (
     <div
       ref={drag}
-    className={`px-3 py-2 rounded border text-sm flex flex-col cursor-move transition bg-white hover:bg-gray-50 border-gray-200 ${isDragging ? 'opacity-40' : ''}`}
+    className={`group px-3 py-2 rounded border text-sm flex flex-col cursor-move transition bg-white hover:bg-gray-50 border-gray-200 relative ${isDragging ? 'opacity-40' : ''}`}
       title="Drag contact"
     >
-      <span className="font-medium">{name}</span>
-      <span className="text-xs text-gray-600">{email}</span>
+      <button
+        onClick={(e) => { e.stopPropagation(); onRemove(id); }}
+        title="Remove contact"
+        className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded text-gray-400 hover:text-red-600 hover:bg-red-50"
+      >
+        ×
+      </button>
+      <span className="font-medium pr-4">{name}</span>
+      <span className="text-xs text-gray-600 pr-4">{email}</span>
     </div>
   );
 }
