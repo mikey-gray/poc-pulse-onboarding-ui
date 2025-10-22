@@ -1,24 +1,10 @@
-## Pulse Onboarding UI
+# Pulse Onboarding UI
 
-Prototype single-page React + TypeScript application for organising contacts into company, workspaces, and clients. Built with Vite and Tailwind.
+## Overview
 
-### Features Implemented
+Prototype single-page React + TypeScript application for organising contacts into company, workspaces, and clients. 
 
-- Header with Reset and View State (JSON) popover
-- Resizable split layout (contacts left, workspaces/clients right)
-- Add / Import sample contacts, alphabetised list
-- Create workspaces and clients with editable names
-- Centralised state context with reset capability
-
-### Planned (Not Yet Implemented)
-
-- Drag & drop of contacts assigning roles (Admin, Manager, Account)
-- Azure AD OAuth import of real contacts
-- Persistent storage (localStorage / backend API)
-- Accessibility & keyboard navigation improvements
-- Tests (state mutation logic)
-
-### Getting Started
+## Getting Started
 
 Install dependencies and start dev server:
 
@@ -27,9 +13,7 @@ npm install
 npm run dev
 ```
 
-Then open the printed localhost port (default 5173).
-
-### Scripts
+## Commands
 
 - `npm run dev` - Start Vite dev server
 - `npm run build` - Production build (not required for local POC)
@@ -37,22 +21,33 @@ Then open the printed localhost port (default 5173).
 - `npm run test` - Run Vitest tests (to be added)
 - `npm run lint` - Lint sources
 
-### Tech Stack
+## CSV Contact Import (POC)
 
-- React 18 + TypeScript
-- Vite bundler
-- Tailwind CSS for styling
-- Lucide icons
-- react-dnd (planned drag & drop)
-- Vitest (tests)
+Clicking "Import CSV" opens a native file picker restricted to `.csv`. Each non-empty row should contain two comma-separated values: `name,email`. Lines where the second value is not a valid email are ignored. If no valid rows are found an error message appears showing an example format.
 
-### State Shape
+Example rows:
+
+```text
+John Doe,john@example.com
+Jane Smith,jane@domain.org
+```
+
+Duplicate handling: Rows whose email already exists in the current contact list are skipped silently. Manual add form also prevents duplicates and flags invalid emails with a red outline.
+
+An example file is provided at `example-contacts.csv` with 25 sample rows.
+
+Future: Could reintroduce Graph import behind a feature flag, add CSV header handling, or support other delimiters.
+
+## Testing
+
+Vitest is configured. Sample unit tests cover state mutations. 
+
+Run:
+
+```bash
+npm run test
+```
+
+## State Shape
 
 Refer to `src/state/types.ts` for full interfaces of contacts, workspaces, clients, and assignments.
-
-### Next Steps
-
-See Planned section above; after drag & drop is added, integrate role assignment and display under each entity. Add tests before expanding features.
-
-# poc-pulse-onboarding-ui
-A POC for a new way to onboard user to the clientshare pulse application

@@ -1,9 +1,8 @@
 import React from 'react';
 import { useDrop } from 'react-dnd';
-import { Plus, X } from 'lucide-react';
+import { BookPlus, SquarePlus, X } from 'lucide-react';
 import { useAppState } from '../state/StateContext';
 
-// Clean implementation replacing corrupted nested content
 type Palette = 'company' | 'workspace' | 'client';
 
 function Chip({ children, onRemove, palette }: { children: React.ReactNode; onRemove(): void; palette: Palette }) {
@@ -83,6 +82,8 @@ export default function WorkspacesPane() {
     renameWorkspace,
     addClient,
     renameClient,
+    removeWorkspace,
+    removeClient,
     assignCompany,
     assignWorkspace,
     assignClient,
@@ -102,7 +103,7 @@ export default function WorkspacesPane() {
   }), [assignCompany]);
 
   return (
-    <div className="flex flex-col h-full p-3 gap-4 overflow-y-auto">
+    <div className="flex flex-col h-full p-3 gap-4 overflow-y-auto bg-company-100">
       <div className="flex flex-wrap items-center gap-3">
         <input
           value={companyName}
@@ -114,7 +115,7 @@ export default function WorkspacesPane() {
           onClick={addWorkspace}
           className="flex items-center gap-1 px-3 py-2 rounded bg-workspace-500 hover:bg-workspace-600 text-white text-sm shadow-sm"
         >
-          <Plus className="w-4 h-4" /> Workspace
+          <BookPlus className="w-4 h-4" /> Workspace
         </button>
       </div>
       <div ref={companyDrop}>
@@ -143,6 +144,8 @@ export default function WorkspacesPane() {
             clientAssignments={clientAssignments}
             removeWorkspaceAssignment={removeWorkspaceAssignment}
             removeClientAssignment={removeClientAssignment}
+            removeWorkspace={removeWorkspace}
+            removeClient={removeClient}
             contacts={contacts}
           />
         ))}
@@ -167,7 +170,7 @@ interface WorkspaceBoxProps {
   contacts: { id: string; name: string; email: string }[];
 }
 
-function WorkspaceBox(props: WorkspaceBoxProps) {
+function WorkspaceBox(props: WorkspaceBoxProps & { removeWorkspace(id: string): void; removeClient(workspaceId: string, clientId: string): void }) {
   const {
     workspaceId,
     name,
@@ -175,6 +178,8 @@ function WorkspaceBox(props: WorkspaceBoxProps) {
     renameWorkspace,
     addClient,
     renameClient,
+    removeWorkspace,
+    removeClient,
     assignWorkspace,
     assignClient,
     workspaceAssignments,
@@ -193,7 +198,7 @@ function WorkspaceBox(props: WorkspaceBoxProps) {
   const assignedIds = workspaceAssignments.filter(a => a.workspaceId === workspaceId).map(a => a.contactId);
 
   return (
-    <div className={`rounded p-3 shadow-sm space-y-3 transition bg-workspace-50 border border-transparent hover:border-workspace-300`}>      
+    <div className={`rounded p-3 shadow-sm space-y-3 transition bg-workspace-100 border border-transparent hover:border-workspace-300`}>      
       <div className="flex items-center gap-2">
         <input
           value={name}
@@ -201,14 +206,21 @@ function WorkspaceBox(props: WorkspaceBoxProps) {
           placeholder="Workspace"
           className="flex-1 font-medium text-base bg-transparent border border-transparent focus:border-workspace-400 focus:bg-workspace-50/40 hover:border-workspace-300 rounded px-2 py-1 transition"
         />
-        <button onClick={() => addClient(workspaceId)} className="flex items-center gap-1 px-2 py-1 rounded bg-client-500 hover:bg-client-600 text-white text-xs shadow-sm">
-          <Plus className="w-4 h-4" /> Client
+        <button onClick={() => addClient(workspaceId)} className="flex items-center gap-1 px-2.5 py-1.5 rounded bg-client-500 hover:bg-client-600 text-white text-xs shadow-sm">
+          <SquarePlus className="w-4 h-4" /> Client
+        </button>
+        <button
+          onClick={() => removeWorkspace(workspaceId)}
+          className="flex items-center justify-center h-5 w-5 -mt-6 -mr-1 rounded-full border border-workspace-300 text-workspace-500 hover:border-red-500 hover:text-red-600 bg-white text-xs"
+          title="Remove workspace"
+        >
+          <X className="w-4 h-4" />
         </button>
       </div>
       <div ref={workspaceDrop}>
         <DragTarget
           palette="workspace"
-          roleLabel="Manager"
+          roleLabel="Senior Manager"
           isOver={isOverWorkspace}
           assignments={assignedIds}
           contacts={contacts}
@@ -226,6 +238,7 @@ function WorkspaceBox(props: WorkspaceBoxProps) {
             assignClient={assignClient}
             clientAssignments={clientAssignments}
             removeClientAssignment={removeClientAssignment}
+            removeClient={removeClient}
             contacts={contacts}
           />
         ))}
@@ -245,8 +258,8 @@ interface ClientBoxProps {
   contacts: { id: string; name: string; email: string }[];
 }
 
-function ClientBox(props: ClientBoxProps) {
-  const { workspaceId, clientId, name, renameClient, assignClient, clientAssignments, removeClientAssignment, contacts } = props;
+function ClientBox(props: ClientBoxProps & { removeClient(workspaceId: string, clientId: string): void }) {
+  const { workspaceId, clientId, name, renameClient, assignClient, clientAssignments, removeClientAssignment, removeClient, contacts } = props;
   const [{ isOverClient }, clientDrop] = useDrop<{ contactId: string }, void, { isOverClient: boolean }>(() => ({
     accept: 'CONTACT',
     drop: item => assignClient(workspaceId, clientId, item.contactId),
@@ -256,17 +269,26 @@ function ClientBox(props: ClientBoxProps) {
   const assignedIds = clientAssignments.filter(a => a.clientId === clientId).map(a => a.contactId);
 
   return (
-    <div className={`rounded p-2 space-y-2 transition bg-client-50 border border-transparent hover:border-client-300`}>
-      <input
-        value={name}
-        onChange={e => renameClient(workspaceId, clientId, e.target.value)}
-        placeholder="Client"
-        className="w-full text-xs bg-transparent border border-transparent focus:border-client-400 focus:bg-client-50/40 hover:border-client-300 rounded px-2 py-1 transition"
-      />
+    <div className={`rounded p-2 space-y-2 transition bg-client-100 border border-transparent hover:border-client-300`}>
+      <div className="flex items-center gap-2">
+        <input
+          value={name}
+          onChange={e => renameClient(workspaceId, clientId, e.target.value)}
+          placeholder="Client"
+          className="flex-1 text-xs bg-transparent border border-transparent focus:border-client-400 focus:bg-client-50/40 hover:border-client-300 rounded px-2 py-1 transition"
+        />
+        <button
+          onClick={() => removeClient(workspaceId, clientId)}
+          className="flex items-center justify-center h-4 w-4 -mt-4 -mr-1  rounded-full border border-client-300 text-client-500 hover:border-red-500 hover:text-red-600 bg-white text-xs"
+          title="Remove client"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
       <div ref={clientDrop}>
         <DragTarget
           palette="client"
-          roleLabel="Account"
+          roleLabel="Account Manager"
           isOver={isOverClient}
           assignments={assignedIds}
           contacts={contacts}

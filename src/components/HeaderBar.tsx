@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RotateCcw, Eye, BadgeHelp, X } from 'lucide-react';
+import { RotateCcw, Eye, Activity, X } from 'lucide-react';
 import { useAppState } from '../state/StateContext';
 
 export default function HeaderBar() {
@@ -9,7 +9,7 @@ export default function HeaderBar() {
   return (
     <header className="flex items-center justify-between px-4 py-2 border-b border-gray-200 bg-white shadow-sm relative">
       <div className="flex items-center gap-2 font-semibold text-lg">
-        <BadgeHelp className="w-5 h-5" />
+        <Activity className="w-5 h-5" />
         <span>Pulse Onboarding</span>
       </div>
       <div className="flex items-center gap-2">

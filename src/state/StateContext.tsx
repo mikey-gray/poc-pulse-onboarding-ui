@@ -5,10 +5,13 @@ interface StateContextValue extends AppState {
   setCompanyName(name: string): void;
   addContact(contact: Omit<Contact, 'id'>): void;
   importContacts(list: Omit<Contact, 'id'>[]): void;
+  removeContact(contactId: string): void;
   addWorkspace(): string;
   renameWorkspace(id: string, name: string): void;
   addClient(workspaceId: string): string;
   renameClient(workspaceId: string, clientId: string, name: string): void;
+  removeWorkspace(id: string): void;
+  removeClient(workspaceId: string, clientId: string): void;
   assignCompany(contactId: string): void;
   assignWorkspace(workspaceId: string, contactId: string): void;
   assignClient(workspaceId: string, clientId: string, contactId: string): void;
@@ -21,8 +24,7 @@ interface StateContextValue extends AppState {
 const StateContext = createContext<StateContextValue | undefined>(undefined);
 
 const initialContacts: Contact[] = [
-  { id: crypto.randomUUID(), name: 'Alice Johnson', email: 'alice@example.com' },
-  { id: crypto.randomUUID(), name: 'Bob Smith', email: 'bob@example.com' },
+  { id: crypto.randomUUID(), name: 'Example User', email: 'contact@example.com' },
 ];
 
 export function StateProvider({ children }: { children: ReactNode }) {
@@ -43,6 +45,15 @@ export function StateProvider({ children }: { children: ReactNode }) {
   const importContacts = (list: Omit<Contact, 'id'>[]) =>
     setState(s => ({ ...s, contacts: [...s.contacts, ...list.map(c => ({ ...c, id: crypto.randomUUID() }))] }));
 
+  const removeContact = (contactId: string) =>
+    setState(s => ({
+      ...s,
+      contacts: s.contacts.filter(c => c.id !== contactId),
+      companyAssignments: s.companyAssignments.filter(a => a.contactId !== contactId),
+      workspaceAssignments: s.workspaceAssignments.filter(a => a.contactId !== contactId),
+      clientAssignments: s.clientAssignments.filter(a => a.contactId !== contactId),
+    }));
+
   const addWorkspace = () => {
     const id = crypto.randomUUID();
     setState(s => ({ ...s, workspaces: [...s.workspaces, { id, name: '', clients: [] }] }));
@@ -62,6 +73,26 @@ export function StateProvider({ children }: { children: ReactNode }) {
     }));
     return id;
   };
+
+  const removeWorkspace = (workspaceId: string) =>
+    setState(s => ({
+      ...s,
+      workspaces: s.workspaces.filter(w => w.id !== workspaceId),
+      workspaceAssignments: s.workspaceAssignments.filter(a => a.workspaceId !== workspaceId),
+      clientAssignments: s.clientAssignments.filter(a => {
+        const owning = s.workspaces.find(w => w.clients.some(c => c.id === a.clientId));
+        return owning ? owning.id !== workspaceId : true;
+      }),
+    }));
+
+  const removeClient = (workspaceId: string, clientId: string) =>
+    setState(s => ({
+      ...s,
+      workspaces: s.workspaces.map(w =>
+        w.id === workspaceId ? { ...w, clients: w.clients.filter(c => c.id !== clientId) } : w
+      ),
+      clientAssignments: s.clientAssignments.filter(a => a.clientId !== clientId),
+    }));
 
   const renameClient = (workspaceId: string, clientId: string, name: string) =>
     setState(s => ({
@@ -151,6 +182,9 @@ export function StateProvider({ children }: { children: ReactNode }) {
     removeCompanyAssignment,
     removeWorkspaceAssignment,
     removeClientAssignment,
+    removeWorkspace,
+    removeClient,
+    removeContact,
     reset,
   };
 
