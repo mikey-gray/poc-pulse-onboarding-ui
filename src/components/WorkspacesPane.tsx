@@ -17,7 +17,7 @@ export default function WorkspacesPane() {
     contacts,
   } = useAppState();
 
-  const [{ isOverCompany }, companyDrop] = useDrop<{ contactId: string }, void, { isOverCompany: boolean }>(() => ({
+  const [{ isOverCompany: _isOverCompany }, companyDrop] = useDrop<{ contactId: string }, void, { isOverCompany: boolean }>(() => ({
     accept: 'CONTACT',
     drop: item => assignCompany(item.contactId),
     collect: monitor => ({ isOverCompany: monitor.isOver() }),

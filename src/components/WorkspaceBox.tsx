@@ -18,11 +18,9 @@ export function WorkspaceBox({ workspace }: WorkspaceBoxProps) {
     workspaceAssignments,
     removeWorkspaceAssignment,
     contacts,
-    clientAssignments,
-    assignClient,
   } = useAppState();
 
-  const [{ isOverWorkspace }, workspaceDrop] = useDrop<{ contactId: string }, void, { isOverWorkspace: boolean }>(() => ({
+  const [{ isOverWorkspace: _isOverWorkspace }, workspaceDrop] = useDrop<{ contactId: string }, void, { isOverWorkspace: boolean }>(() => ({
     accept: 'CONTACT',
     drop: item => assignWorkspace(workspace.id, item.contactId),
     collect: monitor => ({ isOverWorkspace: monitor.isOver() }),

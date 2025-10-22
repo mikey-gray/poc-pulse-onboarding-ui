@@ -19,7 +19,7 @@ export function ClientBox({ workspaceId, client }: ClientBoxProps) {
     contacts,
   } = useAppState();
 
-  const [{ isOverClient }, clientDrop] = useDrop<{ contactId: string }, void, { isOverClient: boolean }>(() => ({
+  const [{ isOverClient: _isOverClient }, clientDrop] = useDrop<{ contactId: string }, void, { isOverClient: boolean }>(() => ({
     accept: 'CONTACT',
     drop: item => assignClient(workspaceId, client.id, item.contactId),
     collect: monitor => ({ isOverClient: monitor.isOver() }),

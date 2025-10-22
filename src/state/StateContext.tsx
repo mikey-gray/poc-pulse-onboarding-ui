@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { AppState, Contact, Workspace, WorkspaceAssignment, CompanyAssignment, ClientAssignment } from './types';
+import { AppState, Contact } from './types';
 
 interface StateContextValue extends AppState {
   setCompanyName(name: string): void;
