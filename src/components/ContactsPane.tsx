@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { useDrag } from 'react-dnd';
 import { UserPlus, Import } from 'lucide-react';
 import { useAppState } from '../state/StateContext';
 import { parseCsvContacts } from '../utils/parseCsvContacts';
+import DraggableContact from './DraggableContact';
 
 export default function ContactsPane() {
   const { contacts, addContact, importContacts, removeContact } = useAppState();
@@ -98,32 +98,6 @@ export default function ContactsPane() {
           <DraggableContact key={c.id} id={c.id} name={c.name} email={c.email} onRemove={removeContact} />
         ))}
       </div>
-    </div>
-  );
-}
-
-interface DraggableContactProps { id: string; name: string; email: string; onRemove(id: string): void }
-function DraggableContact({ id, name, email, onRemove }: DraggableContactProps) {
-  const [{ isDragging }, drag] = useDrag(() => ({
-    type: 'CONTACT',
-    item: { contactId: id },
-    collect: monitor => ({ isDragging: monitor.isDragging() }),
-  }), [id]);
-  return (
-    <div
-      ref={drag}
-    className={`group px-3 py-2 rounded border text-sm flex flex-col cursor-move transition bg-white hover:bg-gray-50 border-gray-200 relative ${isDragging ? 'opacity-40' : ''}`}
-      title="Drag contact"
-    >
-      <button
-        onClick={(e) => { e.stopPropagation(); onRemove(id); }}
-        title="Remove contact"
-        className="absolute top-1 right-1 w-4 h-4 flex items-center justify-center rounded text-gray-400 hover:text-red-600 hover:bg-red-50"
-      >
-        ×
-      </button>
-      <span className="font-medium pr-4">{name}</span>
-      <span className="text-xs text-gray-600 pr-4">{email}</span>
     </div>
   );
 }
