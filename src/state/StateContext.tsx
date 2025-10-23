@@ -12,12 +12,14 @@ interface StateContextValue extends AppState {
   renameClient(workspaceId: string, clientId: string, name: string): void;
   removeWorkspace(id: string): void;
   removeClient(workspaceId: string, clientId: string): void;
-  assignCompany(contactId: string): void;
-  assignWorkspace(workspaceId: string, contactId: string): void;
-  assignClient(workspaceId: string, clientId: string, contactId: string): void;
-  removeCompanyAssignment(contactId: string): void;
-  removeWorkspaceAssignment(workspaceId: string, contactId: string): void;
-  removeClientAssignment(clientId: string, contactId: string): void;
+  assignOwner(contactId: string): void;
+  assignWorkspaceAdmin(workspaceId: string, contactId: string): void;
+  assignWorkspaceSeniorManager(workspaceId: string, contactId: string): void;
+  assignAccountManager(workspaceId: string, clientId: string, contactId: string): void;
+  removeOwnerAssignment(contactId: string): void;
+  removeWorkspaceAdminAssignment(workspaceId: string, contactId: string): void;
+  removeWorkspaceSeniorManagerAssignment(workspaceId: string, contactId: string): void;
+  removeAccountManagerAssignment(clientId: string, contactId: string): void;
   reset(): void;
 }
 
@@ -32,9 +34,10 @@ export function StateProvider({ children }: { children: ReactNode }) {
     companyName: '',
     contacts: initialContacts,
     workspaces: [],
-    companyAssignments: [],
-    workspaceAssignments: [],
-    clientAssignments: [],
+    ownerAssignments: [],
+    workspaceAdminAssignments: [],
+    workspaceSeniorManagerAssignments: [],
+    accountManagerAssignments: [],
   });
 
   const setCompanyName = (companyName: string) => setState(s => ({ ...s, companyName }));
@@ -49,9 +52,10 @@ export function StateProvider({ children }: { children: ReactNode }) {
     setState(s => ({
       ...s,
       contacts: s.contacts.filter(c => c.id !== contactId),
-      companyAssignments: s.companyAssignments.filter(a => a.contactId !== contactId),
-      workspaceAssignments: s.workspaceAssignments.filter(a => a.contactId !== contactId),
-      clientAssignments: s.clientAssignments.filter(a => a.contactId !== contactId),
+      ownerAssignments: s.ownerAssignments.filter(a => a.contactId !== contactId),
+      workspaceAdminAssignments: s.workspaceAdminAssignments.filter(a => a.contactId !== contactId),
+      workspaceSeniorManagerAssignments: s.workspaceSeniorManagerAssignments.filter(a => a.contactId !== contactId),
+      accountManagerAssignments: s.accountManagerAssignments.filter(a => a.contactId !== contactId),
     }));
 
   const addWorkspace = () => {
@@ -81,8 +85,9 @@ export function StateProvider({ children }: { children: ReactNode }) {
       return {
         ...s,
         workspaces: s.workspaces.filter(w => w.id !== workspaceId),
-        workspaceAssignments: s.workspaceAssignments.filter(a => a.workspaceId !== workspaceId),
-        clientAssignments: s.clientAssignments.filter(a => !clientIds.includes(a.clientId)),
+        workspaceAdminAssignments: s.workspaceAdminAssignments.filter(a => a.workspaceId !== workspaceId),
+        workspaceSeniorManagerAssignments: s.workspaceSeniorManagerAssignments.filter(a => a.workspaceId !== workspaceId),
+        accountManagerAssignments: s.accountManagerAssignments.filter(a => !clientIds.includes(a.clientId)),
       };
     });
 
@@ -92,7 +97,7 @@ export function StateProvider({ children }: { children: ReactNode }) {
       workspaces: s.workspaces.map(w =>
         w.id === workspaceId ? { ...w, clients: w.clients.filter(c => c.id !== clientId) } : w
       ),
-      clientAssignments: s.clientAssignments.filter(a => a.clientId !== clientId),
+      accountManagerAssignments: s.accountManagerAssignments.filter(a => a.clientId !== clientId),
     }));
 
   const renameClient = (workspaceId: string, clientId: string, name: string) =>
@@ -108,52 +113,70 @@ export function StateProvider({ children }: { children: ReactNode }) {
       ),
     }));
 
-  const assignCompany = (contactId: string) =>
+  const assignOwner = (contactId: string) =>
     setState(s => ({
       ...s,
-      companyAssignments: s.companyAssignments.some(a => a.contactId === contactId)
-        ? s.companyAssignments
-        : [...s.companyAssignments, { contactId, role: 'Admin' }],
+      ownerAssignments: s.ownerAssignments.some(a => a.contactId === contactId)
+        ? s.ownerAssignments
+        : [...s.ownerAssignments, { contactId, role: 'Owner' }],
     }));
 
-  const assignWorkspace = (workspaceId: string, contactId: string) =>
+  const assignWorkspaceAdmin = (workspaceId: string, contactId: string) =>
     setState(s => ({
       ...s,
-      workspaceAssignments: s.workspaceAssignments.some(
+      workspaceAdminAssignments: s.workspaceAdminAssignments.some(
         a => a.workspaceId === workspaceId && a.contactId === contactId
       )
-        ? s.workspaceAssignments
-        : [...s.workspaceAssignments, { workspaceId, contactId, role: 'Manager' }],
+        ? s.workspaceAdminAssignments
+        : [...s.workspaceAdminAssignments, { workspaceId, contactId, role: 'WorkspaceAdmin' }],
     }));
 
-  const assignClient = (workspaceId: string, clientId: string, contactId: string) =>
+  const assignWorkspaceSeniorManager = (workspaceId: string, contactId: string) =>
     setState(s => ({
       ...s,
-      clientAssignments: s.clientAssignments.some(
+      workspaceSeniorManagerAssignments: s.workspaceSeniorManagerAssignments.some(
+        a => a.workspaceId === workspaceId && a.contactId === contactId
+      )
+        ? s.workspaceSeniorManagerAssignments
+        : [...s.workspaceSeniorManagerAssignments, { workspaceId, contactId, role: 'SeniorManager' }],
+    }));
+
+  const assignAccountManager = (workspaceId: string, clientId: string, contactId: string) =>
+    setState(s => ({
+      ...s,
+      accountManagerAssignments: s.accountManagerAssignments.some(
         a => a.clientId === clientId && a.contactId === contactId
       )
-        ? s.clientAssignments
-        : [...s.clientAssignments, { clientId, contactId, role: 'Account' }],
+        ? s.accountManagerAssignments
+        : [...s.accountManagerAssignments, { clientId, contactId, role: 'AccountManager' }],
     }));
 
-  const removeCompanyAssignment = (contactId: string) =>
+  const removeOwnerAssignment = (contactId: string) =>
     setState(s => ({
       ...s,
-      companyAssignments: s.companyAssignments.filter(a => a.contactId !== contactId),
+      ownerAssignments: s.ownerAssignments.filter(a => a.contactId !== contactId),
     }));
 
-  const removeWorkspaceAssignment = (workspaceId: string, contactId: string) =>
+  const removeWorkspaceAdminAssignment = (workspaceId: string, contactId: string) =>
     setState(s => ({
       ...s,
-      workspaceAssignments: s.workspaceAssignments.filter(
+      workspaceAdminAssignments: s.workspaceAdminAssignments.filter(
         a => !(a.workspaceId === workspaceId && a.contactId === contactId)
       ),
     }));
 
-  const removeClientAssignment = (clientId: string, contactId: string) =>
+  const removeWorkspaceSeniorManagerAssignment = (workspaceId: string, contactId: string) =>
     setState(s => ({
       ...s,
-      clientAssignments: s.clientAssignments.filter(
+      workspaceSeniorManagerAssignments: s.workspaceSeniorManagerAssignments.filter(
+        a => !(a.workspaceId === workspaceId && a.contactId === contactId)
+      ),
+    }));
+
+  const removeAccountManagerAssignment = (clientId: string, contactId: string) =>
+    setState(s => ({
+      ...s,
+      accountManagerAssignments: s.accountManagerAssignments.filter(
         a => !(a.clientId === clientId && a.contactId === contactId)
       ),
     }));
@@ -163,9 +186,10 @@ export function StateProvider({ children }: { children: ReactNode }) {
       companyName: '',
       contacts: initialContacts,
       workspaces: [],
-      companyAssignments: [],
-      workspaceAssignments: [],
-      clientAssignments: [],
+      ownerAssignments: [],
+      workspaceAdminAssignments: [],
+      workspaceSeniorManagerAssignments: [],
+      accountManagerAssignments: [],
     });
 
   const value: StateContextValue = {
@@ -177,12 +201,14 @@ export function StateProvider({ children }: { children: ReactNode }) {
     renameWorkspace,
     addClient,
     renameClient,
-    assignCompany,
-    assignWorkspace,
-    assignClient,
-    removeCompanyAssignment,
-    removeWorkspaceAssignment,
-    removeClientAssignment,
+    assignOwner,
+    assignWorkspaceAdmin,
+    assignWorkspaceSeniorManager,
+    assignAccountManager,
+    removeOwnerAssignment,
+    removeWorkspaceAdminAssignment,
+    removeWorkspaceSeniorManagerAssignment,
+    removeAccountManagerAssignment,
     removeWorkspace,
     removeClient,
     removeContact,

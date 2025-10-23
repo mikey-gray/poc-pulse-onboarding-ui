@@ -37,18 +37,19 @@ An example file is provided at `example-contacts.csv` with 25 sample rows.
 
 Future: Could reintroduce Graph import behind a feature flag, add CSV header handling, or support other delimiters.
 
-## Removal & Assignments
+## Roles & Assignments
 
 You can remove:
 
-- A contact (removes all its company/workspace/client assignments)
-- A workspace (removes its workspace assignments and all client assignments for its clients)
-- A client (removes its client assignments)
+- A contact (removes all its owner/workspace/client role assignments)
+- A workspace (removes its Workspace Admin and Senior Manager assignments and all Account Manager assignments for its clients)
+- A client (removes its Account Manager assignments)
 
 Drag & drop:
 
-- Drag a contact onto the company box to assign as an Admin
-- Drag onto a workspace to assign as a Senior Manager
+- Drag a contact onto the company box to assign as an Owner
+- Drag onto a workspace (first drop zone) to assign as a Workspace Admin
+- Drag onto the second workspace drop zone to assign as a Senior Manager
 - Drag onto a client to assign as an Account Manager
 
 Chips appear for each assignment; click the × to remove that single assignment.
@@ -61,6 +62,13 @@ Components have been extracted for clarity and reduced prop drilling:
 - `DraggableContact` encapsulates drag behavior
 - `DragTarget` centralizes drop zone visuals & logic
 - `Chip` unifies styling for assignment pills
+
+Assignment arrays now in state:
+
+- `ownerAssignments`
+- `workspaceAdminAssignments`
+- `workspaceSeniorManagerAssignments`
+- `accountManagerAssignments`
 
 Action type aliases are defined in `src/state/actions.ts` for developer ergonomics.
 

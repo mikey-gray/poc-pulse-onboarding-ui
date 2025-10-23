@@ -14,19 +14,29 @@ export function WorkspaceBox({ workspace }: WorkspaceBoxProps) {
     renameWorkspace,
     addClient,
     removeWorkspace,
-    assignWorkspace,
-    workspaceAssignments,
-    removeWorkspaceAssignment,
+    assignWorkspaceAdmin,
+    assignWorkspaceSeniorManager,
+    workspaceAdminAssignments,
+    workspaceSeniorManagerAssignments,
+    removeWorkspaceAdminAssignment,
+    removeWorkspaceSeniorManagerAssignment,
     contacts,
   } = useAppState();
 
-  const [{ isOverWorkspace: _isOverWorkspace }, workspaceDrop] = useDrop<{ contactId: string }, void, { isOverWorkspace: boolean }>(() => ({
+  const [{ isOverWorkspaceAdmin: _isOverWorkspaceAdmin }, adminDrop] = useDrop<{ contactId: string }, void, { isOverWorkspaceAdmin: boolean }>(() => ({
     accept: 'CONTACT',
-    drop: item => assignWorkspace(workspace.id, item.contactId),
-    collect: monitor => ({ isOverWorkspace: monitor.isOver() }),
-  }), [workspace.id, assignWorkspace]);
+    drop: item => assignWorkspaceAdmin(workspace.id, item.contactId),
+    collect: monitor => ({ isOverWorkspaceAdmin: monitor.isOver() }),
+  }), [workspace.id, assignWorkspaceAdmin]);
 
-  const assignedIds = workspaceAssignments.filter(a => a.workspaceId === workspace.id).map(a => a.contactId);
+  const [{ isOverWorkspaceSenior: _isOverWorkspaceSenior }, seniorDrop] = useDrop<{ contactId: string }, void, { isOverWorkspaceSenior: boolean }>(() => ({
+    accept: 'CONTACT',
+    drop: item => assignWorkspaceSeniorManager(workspace.id, item.contactId),
+    collect: monitor => ({ isOverWorkspaceSenior: monitor.isOver() }),
+  }), [workspace.id, assignWorkspaceSeniorManager]);
+
+  const adminAssignedIds = workspaceAdminAssignments.filter(a => a.workspaceId === workspace.id).map(a => a.contactId);
+  const seniorAssignedIds = workspaceSeniorManagerAssignments.filter(a => a.workspaceId === workspace.id).map(a => a.contactId);
 
   return (
     <div className="rounded p-3 shadow-sm space-y-3 transition bg-workspace-100 border border-transparent hover:border-workspace-300">
@@ -48,15 +58,27 @@ export function WorkspaceBox({ workspace }: WorkspaceBoxProps) {
           <X className="w-4 h-4" />
         </button>
       </div>
-      <div ref={workspaceDrop}>
-        <DragTarget
-          palette="workspace"
-          roleLabel="Senior Manager"
-          assignments={assignedIds}
-          contacts={contacts}
-          onRemove={(id) => removeWorkspaceAssignment(workspace.id, id)}
-          onDrop={(contactId) => assignWorkspace(workspace.id, contactId)}
-        />
+      <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}>
+        <div ref={adminDrop}>
+          <DragTarget
+            palette="workspace"
+            roleLabel="Workspace Admin"
+            assignments={adminAssignedIds}
+            contacts={contacts}
+            onRemove={(id) => removeWorkspaceAdminAssignment(workspace.id, id)}
+            onDrop={(contactId) => assignWorkspaceAdmin(workspace.id, contactId)}
+          />
+        </div>
+        <div ref={seniorDrop}>
+          <DragTarget
+            palette="workspace"
+            roleLabel="Senior Manager"
+            assignments={seniorAssignedIds}
+            contacts={contacts}
+            onRemove={(id) => removeWorkspaceSeniorManagerAssignment(workspace.id, id)}
+            onDrop={(contactId) => assignWorkspaceSeniorManager(workspace.id, contactId)}
+          />
+        </div>
       </div>
       <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))' }}>
         {workspace.clients.map(c => (
