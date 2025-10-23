@@ -11,11 +11,7 @@ import { AppState } from '../state/types';
 // pulse_user_clients(client_id, user_id, role)
 // Notes: company id is fixed to 1 for this prototype. Workspace/client ids use in-memory ids.
 
-export function generateSql(state: Omit<AppState, 'companyAssignments' | 'workspaceAssignments' | 'clientAssignments'> & {
-  companyAssignments: { contactId: string; role: string }[];
-  workspaceAssignments: { workspaceId: string; contactId: string; role: string }[];
-  clientAssignments: { clientId: string; contactId: string; role: string }[];
-}): string {
+export function generateSql(state: AppState): string {
   const lines: string[] = [];
 
   // Company
@@ -24,10 +20,18 @@ export function generateSql(state: Omit<AppState, 'companyAssignments' | 'worksp
   lines.push(`INSERT INTO pulse_companies (id, name) VALUES (${companyId}, ${sqlLit(state.companyName || 'Untitled Company')});`);
   lines.push('');
 
-  // Users
-  lines.push('-- Users');
-  state.contacts.forEach((c, _idx) => {
-    lines.push(`INSERT INTO users (id, name, email) VALUES (${sqlLit(c.id)}, ${sqlLit(c.name)}, ${sqlLit(c.email)});`);
+  // Users (only those with a role anywhere)
+  lines.push('-- Users (with roles)');
+  const roleContactIds = new Set<string>([
+    ...state.ownerAssignments.map(a => a.contactId),
+    ...state.workspaceAdminAssignments.map(a => a.contactId),
+    ...state.workspaceSeniorManagerAssignments.map(a => a.contactId),
+    ...state.accountManagerAssignments.map(a => a.contactId),
+  ]);
+  state.contacts.forEach(c => {
+    if (roleContactIds.has(c.id)) {
+      lines.push(`INSERT INTO users (id, name, email) VALUES (${sqlLit(c.id)}, ${sqlLit(c.name)}, ${sqlLit(c.email)});`);
+    }
   });
   lines.push('');
 
@@ -41,23 +45,29 @@ export function generateSql(state: Omit<AppState, 'companyAssignments' | 'worksp
   });
   lines.push('');
 
-  // Company Admin assignments
-  lines.push('-- Company Admin Assignments');
-  state.companyAssignments.forEach(a => {
+  // Company Owner assignments
+  lines.push('-- Company Owner Assignments');
+  state.ownerAssignments.forEach(a => {
     lines.push(`INSERT INTO pulse_user_companies (user_id, company_id, role) VALUES (${sqlLit(a.contactId)}, ${companyId}, ${sqlLit(a.role)});`);
   });
   lines.push('');
 
+  // Workspace Admin assignments
+  lines.push('-- Workspace Admin Assignments');
+  state.workspaceAdminAssignments.forEach(a => {
+    lines.push(`INSERT INTO pulse_workspace_user (workspace_id, user_id, role) VALUES (${sqlLit(a.workspaceId)}, ${sqlLit(a.contactId)}, ${sqlLit(a.role)});`);
+  });
+  lines.push('');
   // Workspace Senior Manager assignments
   lines.push('-- Workspace Senior Manager Assignments');
-  state.workspaceAssignments.forEach(a => {
+  state.workspaceSeniorManagerAssignments.forEach(a => {
     lines.push(`INSERT INTO pulse_workspace_user (workspace_id, user_id, role) VALUES (${sqlLit(a.workspaceId)}, ${sqlLit(a.contactId)}, ${sqlLit(a.role)});`);
   });
   lines.push('');
 
   // Client Account Manager assignments
   lines.push('-- Client Account Manager Assignments');
-  state.clientAssignments.forEach(a => {
+  state.accountManagerAssignments.forEach(a => {
     lines.push(`INSERT INTO pulse_user_clients (client_id, user_id, role) VALUES (${sqlLit(a.clientId)}, ${sqlLit(a.contactId)}, ${sqlLit(a.role)});`);
   });
   lines.push('');

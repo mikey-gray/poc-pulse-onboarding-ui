@@ -11,17 +11,17 @@ export default function WorkspacesPane() {
     setCompanyName,
     workspaces,
     addWorkspace,
-    assignCompany,
-    companyAssignments,
-    removeCompanyAssignment,
+  assignOwner,
+  ownerAssignments,
+  removeOwnerAssignment,
     contacts,
   } = useAppState();
 
   const [{ isOverCompany: _isOverCompany }, companyDrop] = useDrop<{ contactId: string }, void, { isOverCompany: boolean }>(() => ({
     accept: 'CONTACT',
-    drop: item => assignCompany(item.contactId),
+    drop: item => assignOwner(item.contactId),
     collect: monitor => ({ isOverCompany: monitor.isOver() }),
-  }), [assignCompany]);
+  }), [assignOwner]);
 
   return (
     <div className="flex flex-col h-full p-3 gap-4 overflow-y-auto bg-company-100">
@@ -42,11 +42,11 @@ export default function WorkspacesPane() {
       <div ref={companyDrop}>
         <DragTarget
           palette="company"
-          roleLabel="Admin"
-          assignments={companyAssignments.map(a => a.contactId)}
+          roleLabel="Owner"
+          assignments={ownerAssignments.map(a => a.contactId)}
           contacts={contacts}
-          onRemove={removeCompanyAssignment}
-          onDrop={(contactId) => assignCompany(contactId)}
+          onRemove={removeOwnerAssignment}
+          onDrop={(contactId) => assignOwner(contactId)}
         />
       </div>
       <div className="space-y-4">

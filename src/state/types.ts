@@ -4,23 +4,29 @@ export interface Contact {
   email: string;
 }
 
-export type Role = 'Admin' | 'Manager' | 'Account';
+export type Role = 'Owner' | 'WorkspaceAdmin' | 'SeniorManager' | 'AccountManager';
 
-export interface ClientAssignment {
+export interface AccountManagerAssignment {
   clientId: string;
   contactId: string;
-  role: Role; // Account
+  role: Role; // AccountManager
 }
 
-export interface WorkspaceAssignment {
+export interface WorkspaceAdminAssignment {
   workspaceId: string;
   contactId: string;
-  role: Role; // Manager
+  role: Role; // WorkspaceAdmin
 }
 
-export interface CompanyAssignment {
+export interface WorkspaceSeniorManagerAssignment {
+  workspaceId: string;
   contactId: string;
-  role: Role; // Admin
+  role: Role; // SeniorManager
+}
+
+export interface OwnerAssignment {
+  contactId: string;
+  role: Role; // Owner
 }
 
 export interface Client {
@@ -38,7 +44,8 @@ export interface AppState {
   companyName: string;
   contacts: Contact[];
   workspaces: Workspace[];
-  companyAssignments: CompanyAssignment[];
-  workspaceAssignments: WorkspaceAssignment[];
-  clientAssignments: ClientAssignment[];
+  ownerAssignments: OwnerAssignment[];
+  workspaceAdminAssignments: WorkspaceAdminAssignment[];
+  workspaceSeniorManagerAssignments: WorkspaceSeniorManagerAssignment[];
+  accountManagerAssignments: AccountManagerAssignment[];
 }

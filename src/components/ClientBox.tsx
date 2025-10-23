@@ -12,20 +12,20 @@ interface ClientBoxProps {
 export function ClientBox({ workspaceId, client }: ClientBoxProps) {
   const {
     renameClient,
-    assignClient,
-    clientAssignments,
-    removeClientAssignment,
+    assignAccountManager,
+    accountManagerAssignments,
+    removeAccountManagerAssignment,
     removeClient,
     contacts,
   } = useAppState();
 
   const [{ isOverClient: _isOverClient }, clientDrop] = useDrop<{ contactId: string }, void, { isOverClient: boolean }>(() => ({
     accept: 'CONTACT',
-    drop: item => assignClient(workspaceId, client.id, item.contactId),
+    drop: item => assignAccountManager(workspaceId, client.id, item.contactId),
     collect: monitor => ({ isOverClient: monitor.isOver() }),
-  }), [workspaceId, client.id, assignClient]);
+  }), [workspaceId, client.id, assignAccountManager]);
 
-  const assignedIds = clientAssignments.filter(a => a.clientId === client.id).map(a => a.contactId);
+  const assignedIds = accountManagerAssignments.filter(a => a.clientId === client.id).map(a => a.contactId);
 
   return (
     <div className="rounded p-2 space-y-2 transition bg-client-100 border border-transparent hover:border-client-300">
@@ -50,8 +50,8 @@ export function ClientBox({ workspaceId, client }: ClientBoxProps) {
           roleLabel="Account Manager"
           assignments={assignedIds}
           contacts={contacts}
-          onRemove={(id) => removeClientAssignment(client.id, id)}
-          onDrop={(contactId) => assignClient(workspaceId, client.id, contactId)}
+          onRemove={(id) => removeAccountManagerAssignment(client.id, id)}
+          onDrop={(contactId) => assignAccountManager(workspaceId, client.id, contactId)}
         />
       </div>
     </div>
