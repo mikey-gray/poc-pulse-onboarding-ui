@@ -1,7 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 
-export type Palette = 'company' | 'workspace' | 'client';
+export type Palette = 'company' | 'workspace' | 'client' | 'recipient';
 
 interface ChipProps {
   palette: Palette;
@@ -13,6 +13,7 @@ const paletteClasses: Record<Palette, string> = {
   company: 'bg-company-100 border-company-300 text-company-800',
   workspace: 'bg-workspace-100 border-workspace-300 text-workspace-800',
   client: 'bg-client-100 border-client-300 text-client-800',
+  recipient: 'bg-purple-100 border-purple-300 text-purple-800',
 };
 
 export function Chip({ palette, children, onRemove }: ChipProps) {

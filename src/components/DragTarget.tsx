@@ -3,7 +3,7 @@ import { useDrop } from 'react-dnd';
 import Chip, { Palette } from './Chip';
 
 interface DragTargetProps {
-  palette: Palette;
+  palette: Palette | 'recipient';
   roleLabel: string;
   assignments: string[]; // contactIds
   contacts: { id: string; name: string }[];
@@ -23,6 +23,7 @@ export function DragTarget({ palette, roleLabel, assignments, contacts, onRemove
     company: { box: 'border-company-400 bg-company-50', active: 'ring-2 ring-company-300' },
     workspace: { box: 'border-workspace-400 bg-workspace-50', active: 'ring-2 ring-workspace-300' },
     client: { box: 'border-client-400 bg-client-50', active: 'ring-2 ring-client-300' },
+    recipient: { box: 'border-purple-400 bg-purple-50', active: 'ring-2 ring-purple-300' },
   }[palette];
 
   return (

@@ -43,7 +43,7 @@ You can remove:
 
 - A contact (removes all its owner/workspace/client role assignments)
 - A workspace (removes its Workspace Admin and Senior Manager assignments and all Account Manager assignments for its clients)
-- A client (removes its Account Manager assignments)
+- A client (removes its Account Manager and Recipient assignments)
 
 Drag & drop:
 
@@ -51,6 +51,7 @@ Drag & drop:
 - Drag onto a workspace (first drop zone) to assign as a Workspace Admin
 - Drag onto the second workspace drop zone to assign as a Senior Manager
 - Drag onto a client to assign as an Account Manager
+- Drag onto the second client drop zone to add as a Recipient
 
 Chips appear for each assignment; click the × to remove that single assignment.
 
@@ -69,6 +70,7 @@ Assignment arrays now in state:
 - `workspaceAdminAssignments`
 - `workspaceSeniorManagerAssignments`
 - `accountManagerAssignments`
+- `recipientAssignments`
 
 Action type aliases are defined in `src/state/actions.ts` for developer ergonomics.
 
