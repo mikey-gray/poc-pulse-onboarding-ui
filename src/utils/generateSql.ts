@@ -27,6 +27,7 @@ export function generateSql(state: AppState): string {
     ...state.workspaceAdminAssignments.map(a => a.contactId),
     ...state.workspaceSeniorManagerAssignments.map(a => a.contactId),
     ...state.accountManagerAssignments.map(a => a.contactId),
+    ...state.recipientAssignments.map(a => a.contactId),
   ]);
   state.contacts.forEach(c => {
     if (roleContactIds.has(c.id)) {
@@ -69,6 +70,13 @@ export function generateSql(state: AppState): string {
   lines.push('-- Client Account Manager Assignments');
   state.accountManagerAssignments.forEach(a => {
     lines.push(`INSERT INTO pulse_user_clients (client_id, user_id, role) VALUES (${sqlLit(a.clientId)}, ${sqlLit(a.contactId)}, ${sqlLit(a.role)});`);
+  });
+  lines.push('');
+
+  // Client Recipient assignments
+  lines.push('-- Client Recipient Assignments');
+  state.recipientAssignments.forEach(a => {
+    lines.push(`INSERT INTO pulse_client_recipients (client_id, user_id, role) VALUES (${sqlLit(a.clientId)}, ${sqlLit(a.contactId)}, ${sqlLit(a.role)});`);
   });
   lines.push('');
 

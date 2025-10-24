@@ -13,8 +13,11 @@ export function ClientBox({ workspaceId, client }: ClientBoxProps) {
   const {
     renameClient,
     assignAccountManager,
+    assignRecipient,
     accountManagerAssignments,
+    recipientAssignments,
     removeAccountManagerAssignment,
+    removeRecipientAssignment,
     removeClient,
     contacts,
   } = useAppState();
@@ -25,7 +28,8 @@ export function ClientBox({ workspaceId, client }: ClientBoxProps) {
     collect: monitor => ({ isOverClient: monitor.isOver() }),
   }), [workspaceId, client.id, assignAccountManager]);
 
-  const assignedIds = accountManagerAssignments.filter(a => a.clientId === client.id).map(a => a.contactId);
+  const accountManagerIds = accountManagerAssignments.filter(a => a.clientId === client.id).map(a => a.contactId);
+  const recipientIds = recipientAssignments.filter(a => a.clientId === client.id).map(a => a.contactId);
 
   return (
     <div className="rounded p-2 space-y-2 transition bg-client-100 border border-transparent hover:border-client-300">
@@ -45,14 +49,24 @@ export function ClientBox({ workspaceId, client }: ClientBoxProps) {
         </button>
       </div>
       <div ref={clientDrop}>
-        <DragTarget
-          palette="client"
-          roleLabel="Account Manager"
-          assignments={assignedIds}
-          contacts={contacts}
-          onRemove={(id) => removeAccountManagerAssignment(client.id, id)}
-          onDrop={(contactId) => assignAccountManager(workspaceId, client.id, contactId)}
-        />
+        <div className="space-y-2">
+          <DragTarget
+            palette="client"
+            roleLabel="Account Manager"
+            assignments={accountManagerIds}
+            contacts={contacts}
+            onRemove={(id) => removeAccountManagerAssignment(client.id, id)}
+            onDrop={(contactId) => assignAccountManager(workspaceId, client.id, contactId)}
+          />
+          <DragTarget
+            palette="recipient"
+            roleLabel="Recipient"
+            assignments={recipientIds}
+            contacts={contacts}
+            onRemove={(id) => removeRecipientAssignment(client.id, id)}
+            onDrop={(contactId) => assignRecipient(workspaceId, client.id, contactId)}
+          />
+        </div>
       </div>
     </div>
   );
